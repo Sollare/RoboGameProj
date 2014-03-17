@@ -38,6 +38,8 @@ public class CameraControllerAdvanced : MonoBehaviour
     private Vector3 screenMovementForward;
     private Vector3 screenMovementRight;
 
+    private Transform _cursor;
+
     // Выравнивание камеры по вертикали
 
     // Шаг угла на который камера может подниматься и опускаться (рейкасты идут под этими углами)
@@ -63,6 +65,8 @@ public class CameraControllerAdvanced : MonoBehaviour
 
     void Awake()
     {
+        _cursor = GameObject.Find("Cursor").transform;
+
         initialRotation = cachedTransform.rotation;
         initCameraOffset = (cachedTransform.position - target.position);
 
@@ -177,10 +181,23 @@ public class CameraControllerAdvanced : MonoBehaviour
         posRel.x /= maxHalf;
         posRel.y /= maxHalf;
 
+        var targetPos = targetPosition;
+        targetPos.y = 0;
+
         var cameraAdjustmentVector = posRel.x * screenMovementRight + posRel.y * screenMovementForward;
         cameraAdjustmentVector.y = 0f;
 
-        cachedTransform.position += cameraAdjustmentVector * cameraPreview;
+
+
+        var tarPosX = target.position.x - Mathf.Clamp((Screen.width / 2f - cursorScreenPosition.x) / 150, -6, 6);
+        var tarPosY = target.position.y - Mathf.Clamp((Screen.height / 2f - cursorScreenPosition.y) / 300, -3, 3);
+        var cursorPos = new Vector3(tarPosX, 0, tarPosY);
+
+        var modifier = (cursorPos - targetPosition).magnitude;
+
+
+        cachedTransform.position += cameraAdjustmentVector * cameraPreview * modifier;
+        print(Vector3.Angle(Vector3.down, cachedTransform.forward));
     }
 
     bool IsTargetVisible(Transform playerTarget)
